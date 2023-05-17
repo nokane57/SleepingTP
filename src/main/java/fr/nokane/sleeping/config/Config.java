@@ -13,10 +13,12 @@ public class Config {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     public static ForgeConfigSpec CONFIG;
 
+    public static ForgeConfigSpec.IntValue pvpDetectionTimer;
     public static ForgeConfigSpec.BooleanValue enableTeleport;
     public static ForgeConfigSpec.IntValue teleportCooldown;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> bedBlockNames;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> zones;
+    private static long lastTeleportTime = 0;
 
     public static void setup() {
         BUILDER.comment("Sleeping TP configuration").push("general");
@@ -29,6 +31,10 @@ public class Config {
 
         bedBlockNames = BUILDER.comment("List of valid bed block names for player teleportation when sleeping")
                 .defineList("bedBlockNames", getDefaultBedBlockNames(), Config::isValidBedBlockName);
+
+        pvpDetectionTimer = BUILDER.comment("Duration in seconds for PVP detection timer")
+                .defineInRange("pvpDetectionTimer", 10, 1, Integer.MAX_VALUE); // Nouveau paramètre
+
 
         zones = BUILDER.comment("test").defineList("zones", getDefaultZones(), Config::isValidedZones);
 
@@ -59,10 +65,7 @@ public class Config {
     }
 
     private static List<String> getDefaultZones() {
-        return Arrays.asList(
-                "zone1:100,100,100",
-                "zone2:100,100,100"
-        );
+        return Arrays.asList("zone1:100,100,100", "zone2:100,100,100");
     }
 
     private static boolean isValidBedBlockName(Object value) {
@@ -70,13 +73,7 @@ public class Config {
             return false;
         }
         String bedBlockName = (String) value;
-        final String MINECRAFT_PREFIX = "minecraft:";
-        final String BED_SUFFIX = "_bed";
-        if (!bedBlockName.startsWith(MINECRAFT_PREFIX)) {
-            return false;
-        }
-        String bedBlockSuffix = bedBlockName.substring(MINECRAFT_PREFIX.length());
-        return bedBlockSuffix.endsWith(BED_SUFFIX);
+        return bedBlockName.contains(":");
     }
 
     private static boolean isValidedZones(Object value) {
@@ -103,10 +100,27 @@ public class Config {
                 return false;
             }
             // Add more validation rules for the coordinates if needed
-
             return true;
         } catch (NumberFormatException e) {
             return false;
         }
     }
+
+    public static boolean isTeleportEnabled() {
+        return enableTeleport.get();
+    }
+
+    public static int getTeleportCooldown() {
+        return teleportCooldown.get();
+    }
+
+    public static long getLastTeleportTime() {
+        return lastTeleportTime;
+    }
+
+    public static void setLastTeleportTime(long lastTeleportTime) {
+        Config.lastTeleportTime = lastTeleportTime;
+    }
+
+    public static int getPvpDetectionTimer() {return pvpDetectionTimer.get();}
 }

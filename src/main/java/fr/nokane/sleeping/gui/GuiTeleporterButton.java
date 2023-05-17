@@ -2,11 +2,8 @@ package fr.nokane.sleeping.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 
-import java.util.Optional;
 
 public class GuiTeleporterButton extends Button {
 
