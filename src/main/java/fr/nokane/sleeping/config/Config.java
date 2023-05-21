@@ -12,24 +12,29 @@ public class Config {
 
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     public static ForgeConfigSpec CONFIG;
-
-    public static ForgeConfigSpec.IntValue pvpDetectionTimer;
     public static ForgeConfigSpec.IntValue teleportCooldown;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> bedBlockNames;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> zones;
+    public static ForgeConfigSpec.IntValue commandTeleportCooldownTimer;
+    public static ForgeConfigSpec.IntValue PVPCombatTimer;
     private static long lastTeleportTime = 0;
 
     public static void setup() {
-        BUILDER.comment("Sleeping TP configuration").push("general");
+        BUILDER.comment("Sleeping TP configuration").push("générale");
 
-        teleportCooldown = BUILDER.comment("Cooldown time in seconds for player teleportation when sleeping")
+        teleportCooldown = BUILDER.comment("Temps de recharge en secondes pour la téléportation du joueur en dormant")
                 .defineInRange("teleportCooldown", 60, 1, Integer.MAX_VALUE);
 
-        bedBlockNames = BUILDER.comment("List of valid bed block names for player teleportation when sleeping")
+        bedBlockNames = BUILDER.comment("Liste des noms de bloc de lit valides pour la téléportation du joueur pendant son sommeil")
                 .defineList("bedBlockNames", getDefaultBedBlockNames(), Config::isValidBedBlockName);
 
+        zones = BUILDER.comment("Liste des nom des zones").defineList("zones", getDefaultZones(), Config::isValidedZones);
 
-        zones = BUILDER.comment("test").defineList("zones", getDefaultZones(), Config::isValidedZones);
+        commandTeleportCooldownTimer = BUILDER.comment("Délai en minutes entre chaque utilisation de la commande returnToBed")
+                .defineInRange("teleportCooldownTimer", 5, 1, Integer.MAX_VALUE);
+
+        PVPCombatTimer = BUILDER.comment("Délai en seconde pour ne plus etre en combat")
+                .defineInRange("PvpCombatTimer", 10, 1, Integer.MAX_VALUE);
 
         BUILDER.pop();
         CONFIG = BUILDER.build();
@@ -58,7 +63,7 @@ public class Config {
     }
 
     private static List<String> getDefaultZones() {
-        return Arrays.asList("zone1:100,100,100", "zone2:100,100,100");
+        return Arrays.asList("zone1:100,100,100");
     }
 
     private static boolean isValidBedBlockName(Object value) {
@@ -113,5 +118,19 @@ public class Config {
 
     public static void setTeleportCooldown(int value) {
         teleportCooldown.set(value);
+    }
+
+    private static boolean hasTeleported = false;
+
+    public static boolean hasTeleported() {
+        return hasTeleported;
+    }
+
+    public static void setHasTeleported(boolean value) {
+        hasTeleported = value;
+    }
+
+    public static int getPvPCombatTimer() {
+        return PVPCombatTimer.get();
     }
 }
