@@ -1,13 +1,9 @@
 package fr.nokane.sleeping;
 
-import com.google.common.eventbus.Subscribe;
 import fr.nokane.sleeping.config.Config;
-import fr.nokane.sleeping.event.PlayerSleepingEvent;
-import fr.nokane.sleeping.event.PvPBedDetection;
-import fr.nokane.sleeping.gui.GuiButton;
+import fr.nokane.sleeping.event.SleepingCrouchEvent;
+import fr.nokane.sleeping.network.Networking;
 import fr.nokane.sleeping.utils.Reference;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -37,9 +33,10 @@ public class SleepingTP {
 
     public void setup(FMLCommonSetupEvent e) {
 
+        MinecraftForge.EVENT_BUS.register(new SleepingCrouchEvent());
+        Networking.registerMessaged();
 
         if (config != null) {
-            Config.enableTeleport.get();
             Config.teleportCooldown.get();
             Config.bedBlockNames.get();
         } else {
@@ -49,8 +46,6 @@ public class SleepingTP {
 
     public void clientSetup(FMLClientSetupEvent e) {
         // Setup client-side specific features, if any
-        MinecraftForge.EVENT_BUS.register(new PlayerSleepingEvent());
-        MinecraftForge.EVENT_BUS.register(new PvPBedDetection());
     }
         @SubscribeEvent
         public static void onServerStarting(FMLServerStartingEvent event) {

@@ -14,7 +14,6 @@ public class Config {
     public static ForgeConfigSpec CONFIG;
 
     public static ForgeConfigSpec.IntValue pvpDetectionTimer;
-    public static ForgeConfigSpec.BooleanValue enableTeleport;
     public static ForgeConfigSpec.IntValue teleportCooldown;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> bedBlockNames;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> zones;
@@ -23,17 +22,11 @@ public class Config {
     public static void setup() {
         BUILDER.comment("Sleeping TP configuration").push("general");
 
-        enableTeleport = BUILDER.comment("Enable player teleportation when sleeping")
-                .define("enableTeleport", true);
-
         teleportCooldown = BUILDER.comment("Cooldown time in seconds for player teleportation when sleeping")
                 .defineInRange("teleportCooldown", 60, 1, Integer.MAX_VALUE);
 
         bedBlockNames = BUILDER.comment("List of valid bed block names for player teleportation when sleeping")
                 .defineList("bedBlockNames", getDefaultBedBlockNames(), Config::isValidBedBlockName);
-
-        pvpDetectionTimer = BUILDER.comment("Duration in seconds for PVP detection timer")
-                .defineInRange("pvpDetectionTimer", 10, 1, Integer.MAX_VALUE); // Nouveau paramètre
 
 
         zones = BUILDER.comment("test").defineList("zones", getDefaultZones(), Config::isValidedZones);
@@ -106,10 +99,6 @@ public class Config {
         }
     }
 
-    public static boolean isTeleportEnabled() {
-        return enableTeleport.get();
-    }
-
     public static int getTeleportCooldown() {
         return teleportCooldown.get();
     }
@@ -122,5 +111,7 @@ public class Config {
         Config.lastTeleportTime = lastTeleportTime;
     }
 
-    public static int getPvpDetectionTimer() {return pvpDetectionTimer.get();}
+    public static void setTeleportCooldown(int value) {
+        teleportCooldown.set(value);
+    }
 }
