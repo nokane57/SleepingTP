@@ -10,12 +10,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.network.NetworkEvent;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 import static fr.nokane.sleeping.event.PvPBlockPlaceEventHandler.combatTimer;
 
 public class TeleportPlayerPacket {
-
     private BlockPos targetPosition;
 
     public TeleportPlayerPacket(BlockPos targetPosition) {
@@ -34,46 +36,65 @@ public class TeleportPlayerPacket {
     public static void handle(TeleportPlayerPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
-            // Récupérer l'instance du joueur côté serveur
             ServerPlayerEntity player = context.getSender();
+            if (player != null) {
+                UUID playerUUID = player.getUUID();
 
-            // Vérifier si le joueur est valide, s'il a le droit de téléportation et s'il est en combat
-            if (player != null && canPlayerTeleport(player) && !isPlayerInCombat()) {
-                // Téléporter le joueur à la position cible
-                player.teleportTo(packet.targetPosition.getX(), packet.targetPosition.getY(), packet.targetPosition.getZ());
-                player.closeContainer();
+                if (canPlayerTeleport(playerUUID) && !isPlayerInCombat()) {
+                    player.teleportTo(packet.targetPosition.getX(), packet.targetPosition.getY(), packet.targetPosition.getZ());
+                    player.closeContainer();
 
-                // Mettre à jour le temps de dernière téléportation
-                long currentTime = System.currentTimeMillis();
-                Config.setLastTeleportTime(currentTime);
-            } else {
-                // Envoyer un message au joueur en fonction de la raison pour laquelle la téléportation est annulée
-                if (isPlayerInCombat()) {
-                    player.sendMessage(new StringTextComponent("Vous ne pouvez pas vous téléporter en étant en combat."), player.getUUID());
-                } else {
-                    long currentTime = System.currentTimeMillis();
-                    long lastTeleportTime = Config.getLastTeleportTime();
-                    int teleportCooldown = Config.getTeleportCooldown() * 1000; // Convertir le cooldown en millisecondes
-                    int remainingTime = (int) ((lastTeleportTime + teleportCooldown - currentTime) / 1000); // Temps restant en secondes
+                    // Mettre à jour le temps de dernière téléportation spécifique au joueur
+                    updateLastTeleportTime(playerUUID);
 
+                    // Envoyer un message au joueur avec les informations du timer
+                    int remainingTime = getRemainingTeleportCooldown(playerUUID);
                     player.sendMessage(new StringTextComponent("Vous devez attendre encore " + remainingTime + " secondes avant de pouvoir vous téléporter."), player.getUUID());
+                } else {
+                    // Envoyer un message au joueur en fonction de la raison pour laquelle la téléportation est annulée
+                    if (isPlayerInCombat()) {
+                        player.sendMessage(new StringTextComponent("Vous ne pouvez pas vous téléporter en étant en combat."), player.getUUID());
+                    } else {
+                        int remainingTime = getRemainingTeleportCooldown(playerUUID);
+                        player.sendMessage(new StringTextComponent("Vous devez attendre encore " + remainingTime + " secondes avant de pouvoir vous téléporter."), player.getUUID());
+                    }
                 }
             }
         });
+
         context.setPacketHandled(true);
     }
+
+    private static Map<UUID, Long> lastTeleportTimes = new HashMap<>();
+    private static int teleportCooldownSeconds = 60;
 
     private static boolean isPlayerInCombat() {
         // Vérifier si le joueur est en combat (utilisez votre logique spécifique pour déterminer si le joueur est en combat)
         return PvPBlockPlaceEventHandler.combatTimer > 0;
     }
 
-    private static boolean canPlayerTeleport(ServerPlayerEntity player) {
+    private static boolean canPlayerTeleport(UUID playerUUID) {
         long currentTime = System.currentTimeMillis();
-        long lastTeleportTime = Config.getLastTeleportTime();
-        int teleportCooldown = Config.getTeleportCooldown() * 1000; // Convert cooldown to milliseconds
+        long lastTeleportTime = lastTeleportTimes.getOrDefault(playerUUID, 0L);
+        long teleportCooldownMillis = teleportCooldownSeconds * 1000;
 
         // Vérifier si le joueur a attendu suffisamment longtemps depuis sa dernière téléportation
-        return currentTime - lastTeleportTime >= teleportCooldown;
+        return currentTime - lastTeleportTime >= teleportCooldownMillis;
+    }
+
+    private static void updateLastTeleportTime(UUID playerUUID) {
+        long currentTime = System.currentTimeMillis();
+        lastTeleportTimes.put(playerUUID, currentTime);
+    }
+
+    private static int getRemainingTeleportCooldown(UUID playerUUID) {
+        long currentTime = System.currentTimeMillis();
+        long lastTeleportTime = lastTeleportTimes.getOrDefault(playerUUID, 0L);
+        long teleportCooldownMillis = teleportCooldownSeconds * 1000;
+        long remainingTimeMillis = lastTeleportTime + teleportCooldownMillis - currentTime;
+
+        // Convertir le temps restant en secondes
+        int remainingTimeSeconds = (int) (remainingTimeMillis / 1000);
+        return remainingTimeSeconds > 0 ? remainingTimeSeconds : 0;
     }
 }
