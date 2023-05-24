@@ -1,10 +1,10 @@
 package fr.nokane.sleeping.network;
 
+
 import fr.nokane.sleeping.config.Config;
 import fr.nokane.sleeping.event.PvPBlockPlaceEventHandler;
-import fr.nokane.sleeping.gui.TimerScreen;
+import fr.nokane.sleeping.event.SleepingCrouchEvent;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
@@ -14,8 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
-
-import static fr.nokane.sleeping.event.PvPBlockPlaceEventHandler.combatTimer;
 
 public class TeleportPlayerPacket {
     private BlockPos targetPosition;
@@ -41,8 +39,10 @@ public class TeleportPlayerPacket {
                 UUID playerUUID = player.getUUID();
 
                 if (canPlayerTeleport(playerUUID) && !isPlayerInCombat()) {
+                    player.stopSleepInBed(true, true);
                     player.teleportTo(packet.targetPosition.getX(), packet.targetPosition.getY(), packet.targetPosition.getZ());
                     player.closeContainer();
+
 
                     // Mettre à jour le temps de dernière téléportation spécifique au joueur
                     updateLastTeleportTime(playerUUID);

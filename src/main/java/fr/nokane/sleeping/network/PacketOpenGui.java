@@ -1,6 +1,6 @@
 package fr.nokane.sleeping.network;
 
-import fr.nokane.sleeping.SleepingTP;
+
 import fr.nokane.sleeping.config.Config;
 import fr.nokane.sleeping.gui.TeleporteScreen;
 import fr.nokane.sleeping.gui.TimerScreen;

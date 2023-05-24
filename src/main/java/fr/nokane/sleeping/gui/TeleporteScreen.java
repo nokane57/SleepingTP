@@ -3,6 +3,7 @@ package fr.nokane.sleeping.gui;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import fr.nokane.sleeping.config.Config;
+import fr.nokane.sleeping.event.SleepingCrouchEvent;
 import fr.nokane.sleeping.network.Networking;
 import fr.nokane.sleeping.network.TeleportPlayerPacket;
 import net.minecraft.client.Minecraft;

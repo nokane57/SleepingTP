@@ -22,7 +22,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
-
 @Mod(value = Reference.MOD_ID)
 public class SleepingTP {
     public static final Logger logger = LogManager.getLogger();
@@ -31,9 +30,8 @@ public class SleepingTP {
     public SleepingTP() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-
-        Config.setup();
         config = Config.CONFIG;
+        Config.setup();
     }
 
     public void setup(FMLCommonSetupEvent event) {
@@ -50,6 +48,7 @@ public class SleepingTP {
         } else {
             getLogger().error("Erreur lors du chargement de la configuration !");
         }
+
     }
 
     public void registerCommands(RegisterCommandsEvent event) {

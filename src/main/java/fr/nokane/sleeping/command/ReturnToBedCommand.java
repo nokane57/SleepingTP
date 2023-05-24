@@ -16,12 +16,14 @@ public class ReturnToBedCommand {
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(Commands.literal("returnToBed")
+                        .requires(source -> source.hasPermission(0))
                 .executes(context -> returnToBed(context.getSource())));
     }
 
     private static int returnToBed(CommandSource source) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayerOrException();
         BlockPos bedLocation = player.getRespawnPosition();
+
 
         if (bedLocation == null) {
             source.sendFailure(new StringTextComponent("Vous n'avez pas de lit enregistré."));
@@ -48,7 +50,7 @@ public class ReturnToBedCommand {
         }
 
         // Téléporter le joueur à son lit
-        player.teleportTo(bedLocation.getX() + 0.5, bedLocation.getY() + 0.5, bedLocation.getZ() + 0.5);
+        player.teleportTo(bedLocation.getX() + 1.5, bedLocation.getY() + 1.5, bedLocation.getZ() + 1.5);
         lastTeleportTime = currentTime;
 
         source.sendSuccess(new StringTextComponent("Vous êtes retourné à votre lit."), true);

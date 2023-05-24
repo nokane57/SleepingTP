@@ -1,6 +1,5 @@
 package fr.nokane.sleeping.config;
 
-
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
@@ -40,6 +39,7 @@ public class Config {
         CONFIG = BUILDER.build();
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CONFIG);
     }
+
 
     private static List<String> getDefaultBedBlockNames() {
         return Arrays.asList(
