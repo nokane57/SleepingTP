@@ -16,13 +16,13 @@ public class Networking {
         return ID++;
     }
 
-    public static void registerMessaged() {
+    public static void registerMessages() {
         INSTANCE = NetworkRegistry.newSimpleChannel(new ResourceLocation(Reference.MOD_ID, "sleepingtp"),
                 () -> "1.0",
                 s -> true,
                 s -> true);
         INSTANCE.messageBuilder(PacketOpenGui.class, nextID())
-                .encoder(((packetOpenGui, packetBuffer) -> {}))
+                .encoder((packetOpenGui, packetBuffer) -> {})
                 .decoder(packetBuffer -> new PacketOpenGui())
                 .consumer(PacketOpenGui::handle)
                 .add();
@@ -41,6 +41,11 @@ public class Networking {
                 .decoder(TeleportPlayerPacket::decode)
                 .consumer(TeleportPlayerPacket::handle)
                 .add();
+        INSTANCE.messageBuilder(PacketConfigSync.class, nextID())
+                .encoder(PacketConfigSync::encode)
+                .decoder(PacketConfigSync::decode)
+                .consumer(PacketConfigSync::handle)
+                .add();
     }
 
     public static void sendToClient(Object packet, ServerPlayerEntity player) {
@@ -49,7 +54,9 @@ public class Networking {
         }
     }
 
-    public static void senToServer(Object packet) {
-        INSTANCE.sendToServer(packet);
+    public static void sendToServer(Object packet) {
+        if (INSTANCE != null) {
+            INSTANCE.sendToServer(packet);
+        }
     }
 }

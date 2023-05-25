@@ -1,10 +1,10 @@
 package fr.nokane.sleeping.network;
 
+import fr.nokane.sleeping.config.Config;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -13,13 +13,13 @@ public class PacketZone {
     private List<String> zoneList;
 
     public PacketZone(List<String> zoneList) {
-        this.zoneList = zoneList;
+        this.zoneList = getZoneListFromConfig();
     }
 
     public static void encode(PacketZone message, PacketBuffer buffer) {
         buffer.writeInt(message.zoneList.size());
         for (String zoneEntry : message.zoneList) {
-            buffer.writeByteArray(zoneEntry.getBytes());
+            buffer.writeUtf(zoneEntry);
         }
     }
 
@@ -27,7 +27,7 @@ public class PacketZone {
         int size = buffer.readInt();
         List<String> zoneList = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            String zoneEntry = Arrays.toString(buffer.readByteArray());
+            String zoneEntry = buffer.readUtf();
             zoneList.add(zoneEntry);
         }
         return new PacketZone(zoneList);
@@ -48,5 +48,9 @@ public class PacketZone {
             }
         });
         context.setPacketHandled(true);
+    }
+
+    public static List<String> getZoneListFromConfig() {
+        return new ArrayList<>(Config.zones.get());
     }
 }

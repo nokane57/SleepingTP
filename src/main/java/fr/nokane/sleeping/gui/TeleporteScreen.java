@@ -42,7 +42,7 @@ public class TeleporteScreen extends Screen {
             addButton(new Button(x, y, buttonWidth, buttonHeight, buttonText, button -> {
                 if (!isTimerRunning()) {
                     TeleportPlayerPacket packet = new TeleportPlayerPacket(coordinates);
-                    Networking.senToServer(packet);
+                    Networking.sendToServer(packet);
                 }
             }));
             y += buttonSpacing;

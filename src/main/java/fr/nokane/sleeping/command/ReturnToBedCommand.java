@@ -8,22 +8,35 @@ import net.minecraft.command.Commands;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.server.permission.PermissionAPI;
 
 public class ReturnToBedCommand {
     private static long lastTeleportTime = 0;
     private static final long TELEPORT_COOLDOWN = Config.commandTeleportCooldownTimer.get() * 60 * 1000; // Convertir les minutes en millisecondes
-
+    private static final String PERMISSION_RETURN = "sleeping.return";
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
-        dispatcher.register(Commands.literal("returnToBed")
-                        .requires(source -> source.hasPermission(0))
-                .executes(context -> returnToBed(context.getSource())));
+        dispatcher.register(
+                Commands.literal("returnToBed")
+                        .requires(source -> {
+                            try {
+                                return hasPermission(source, PERMISSION_RETURN);
+                            } catch (CommandSyntaxException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .executes(context -> returnToBed(context.getSource()))
+        );
+    }
+
+    private static boolean hasPermission(CommandSource source, String permission) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayerOrException();
+        return PermissionAPI.hasPermission(player, permission);
     }
 
     private static int returnToBed(CommandSource source) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayerOrException();
         BlockPos bedLocation = player.getRespawnPosition();
-
 
         if (bedLocation == null) {
             source.sendFailure(new StringTextComponent("Vous n'avez pas de lit enregistré."));

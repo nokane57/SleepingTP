@@ -1,9 +1,7 @@
 package fr.nokane.sleeping.network;
 
-
 import fr.nokane.sleeping.config.Config;
 import fr.nokane.sleeping.event.PvPBlockPlaceEventHandler;
-import fr.nokane.sleeping.event.SleepingCrouchEvent;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
@@ -14,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
+
 
 public class TeleportPlayerPacket {
     private BlockPos targetPosition;
@@ -38,11 +37,13 @@ public class TeleportPlayerPacket {
             if (player != null) {
                 UUID playerUUID = player.getUUID();
 
+                // Récupérer la valeur du cooldown de téléportation depuis la configuration
+                int teleportCooldownSeconds = Config.getTeleportCooldown();
+
                 if (canPlayerTeleport(playerUUID) && !isPlayerInCombat()) {
                     player.stopSleepInBed(true, true);
                     player.teleportTo(packet.targetPosition.getX(), packet.targetPosition.getY(), packet.targetPosition.getZ());
                     player.closeContainer();
-
 
                     // Mettre à jour le temps de dernière téléportation spécifique au joueur
                     updateLastTeleportTime(playerUUID);
@@ -66,7 +67,6 @@ public class TeleportPlayerPacket {
     }
 
     private static Map<UUID, Long> lastTeleportTimes = new HashMap<>();
-    private static int teleportCooldownSeconds = 60;
 
     private static boolean isPlayerInCombat() {
         // Vérifier si le joueur est en combat (utilisez votre logique spécifique pour déterminer si le joueur est en combat)
@@ -76,6 +76,9 @@ public class TeleportPlayerPacket {
     private static boolean canPlayerTeleport(UUID playerUUID) {
         long currentTime = System.currentTimeMillis();
         long lastTeleportTime = lastTeleportTimes.getOrDefault(playerUUID, 0L);
+
+        // Récupérer la valeur du cooldown de téléportation depuis la configuration
+        int teleportCooldownSeconds = Config.getTeleportCooldown();
         long teleportCooldownMillis = teleportCooldownSeconds * 1000;
 
         // Vérifier si le joueur a attendu suffisamment longtemps depuis sa dernière téléportation
@@ -90,11 +93,15 @@ public class TeleportPlayerPacket {
     private static int getRemainingTeleportCooldown(UUID playerUUID) {
         long currentTime = System.currentTimeMillis();
         long lastTeleportTime = lastTeleportTimes.getOrDefault(playerUUID, 0L);
+
+        // Récupérer la valeur du cooldown de téléportation depuis la configuration
+        int teleportCooldownSeconds = Config.getTeleportCooldown();
         long teleportCooldownMillis = teleportCooldownSeconds * 1000;
+
         long remainingTimeMillis = lastTeleportTime + teleportCooldownMillis - currentTime;
 
         // Convertir le temps restant en secondes
         int remainingTimeSeconds = (int) (remainingTimeMillis / 1000);
-        return remainingTimeSeconds > 0 ? remainingTimeSeconds : 0;
+        return Math.max(remainingTimeSeconds, 0);
     }
 }

@@ -1,6 +1,7 @@
 package fr.nokane.sleeping.event;
 
 import fr.nokane.sleeping.config.Config;
+
 import fr.nokane.sleeping.utils.Reference;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;

@@ -11,19 +11,23 @@ import java.util.function.Supplier;
 
 
 public class PacketTimer {
+    private long lastTeleportTime;
     private int teleportCooldown;
 
-    public PacketTimer(int teleportCooldown) {
+    public PacketTimer(long lastTeleportTime, int teleportCooldown) {
+        this.lastTeleportTime = lastTeleportTime;
         this.teleportCooldown = teleportCooldown;
     }
 
     public static void encode(PacketTimer message, PacketBuffer buffer) {
+        buffer.writeLong(message.lastTeleportTime);
         buffer.writeInt(message.teleportCooldown);
     }
 
     public static PacketTimer decode(PacketBuffer buffer) {
+        long lastTeleportTime = buffer.readLong();
         int teleportCooldown = buffer.readInt();
-        return new PacketTimer(teleportCooldown);
+        return new PacketTimer(lastTeleportTime, teleportCooldown);
     }
 
     public static void handle(PacketTimer message, Supplier<NetworkEvent.Context> contextSupplier) {
@@ -35,12 +39,12 @@ public class PacketTimer {
                 UUID initiatingPlayerUUID = player.getUUID();
 
                 // Vérifier si le joueur actuel est le même que celui qui a initié l'action
-                if (!player.getUUID().equals(initiatingPlayerUUID)) {
+                if (player.getUUID().equals(initiatingPlayerUUID)) {
                     // Mettre à jour les valeurs du timer dans la configuration
-                    Config.setLastTeleportTime(System.currentTimeMillis());
+                    Config.setLastTeleportTime(message.lastTeleportTime);
                     Config.setTeleportCooldown(message.teleportCooldown);
                     // Envoyer un message au joueur avec les informations du timer
-                    player.sendMessage(new StringTextComponent("Teleport Cooldown: " + message.teleportCooldown), player.getUUID());
+                    player.sendMessage(new StringTextComponent("Temps de téléportation : " + message.teleportCooldown), player.getUUID());
                 }
             }
         });

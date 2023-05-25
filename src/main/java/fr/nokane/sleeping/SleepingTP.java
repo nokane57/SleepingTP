@@ -39,12 +39,15 @@ public class SleepingTP {
         MinecraftForge.EVENT_BUS.register(new SleepingCrouchEvent());
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
         MinecraftForge.EVENT_BUS.register(new PvPBlockPlaceEventHandler());
-        Networking.registerMessaged();
+        Networking.registerMessages();
         saveConfig();
 
         if (config != null) {
             Config.teleportCooldown.get();
             Config.bedBlockNames.get();
+            Config.commandTeleportCooldownTimer.get();
+            Config.PVPCombatTimer.get();
+            Config.zones.get();
         } else {
             getLogger().error("Erreur lors du chargement de la configuration !");
         }
